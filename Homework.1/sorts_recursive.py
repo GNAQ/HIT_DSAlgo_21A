@@ -61,7 +61,6 @@ def main():
 		except ValueError:
 			print("请重试：请输入整数")
 
-	# Print_Result(Bubble_Sort(arr.copy()), "冒泡排序结果：")
 	Print_Result(Bubble_Sort(arr), "冒泡排序结果：")
 	Print_Result(Insert_Sort(arr), "插入排序结果：")
 	Print_Result(Select_Sort(arr), "选择排序结果：")
