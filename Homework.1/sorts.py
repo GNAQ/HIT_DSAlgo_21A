@@ -22,7 +22,7 @@ def Bubble_Sort(arr: List[int]) -> Tuple[List[int], float]:
 # 插入排序算法
 # 算法复杂度：空间复杂度 O(n)，时间复杂度 O(n^2)
 @Clone_1st_Arg
-def Insert_Sort(arr) -> Tuple[List[int], float]:
+def Insert_Sort(arr: List[int]) -> Tuple[List[int], float]:
 	beginTime = timer()
 	for i in range(len(arr)):
 		for j in range(i):
@@ -37,7 +37,7 @@ def Insert_Sort(arr) -> Tuple[List[int], float]:
 # 选择排序算法
 # 算法复杂度：空间复杂度 O(n)，时间复杂度 O(n^2)
 @Clone_1st_Arg
-def Select_Sort(arr) -> Tuple[List[int], float]:
+def Select_Sort(arr: List[int]) -> Tuple[List[int], float]:
 	beginTime = timer()
 	result = []
 	n = len(arr)
