@@ -1,6 +1,9 @@
 # Author: GNAQ (HIT-120L022004)
 # Date: 2021/09/14 12:04
 
+from timeit import default_timer as timer
+
+
 def Hanoi(btnId: int, a: str, b: str, c: str):
 	if btnId == 0:
 		return
@@ -18,4 +21,6 @@ def main():
 			print("请重试：请输入正整数")
 
 if __name__ == "__main__":
+	beginTime = timer()
 	main()
+	print(timer() - beginTime)

@@ -4,7 +4,7 @@
 // 对任意交叉路口的"交通管制问题"
 // 本质是求一般（简单）图上的一个最小点染色（Minimum Vertex Coloring）
 // 这个问题是 reduection from 3-SAT 问题的，后者是我们熟知的 NP-Complete 问题
-// 所以目前求解这个问题的最优时间复杂度是 O(n*2^n) 的，该问题的优化形式也是 NP-Hard 的，计数形式到达了 #P-Complete。
+// 所以目前，求解此问题的最优时间复杂度是 $\mathcal{O}(n\times 2^n)$，该问题的优化形式也是 NP-Hard 的，计数形式则为 #P-Complete。
 // 该贪心算法很容易在若干图下得到差距较大的结果，例如皇冠图、完全二分图和正则图等。
 
 // Note: compile with C++11 and -O2 option
