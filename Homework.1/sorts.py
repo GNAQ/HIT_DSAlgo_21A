@@ -1,3 +1,6 @@
+# Author: GNAQ (HIT-120L022004)
+# Date: 2021/09/13 22:48
+
 from typing import List, Tuple
 from timeit import default_timer as timer
 

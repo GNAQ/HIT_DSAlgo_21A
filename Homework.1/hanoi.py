@@ -1,3 +1,6 @@
+# Author: GNAQ (HIT-120L022004)
+# Date: 2021/09/14 12:04
+
 def Hanoi(btnId: int, a: str, b: str, c: str):
 	if btnId == 0:
 		return

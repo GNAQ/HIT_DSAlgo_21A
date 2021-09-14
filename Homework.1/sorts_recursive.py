@@ -1,3 +1,6 @@
+# Author: GNAQ (HIT-120L022004)
+# Date: 2021/09/14 01:17
+
 from typing import List
 
 # 冒泡排序算法 Bubble Sort

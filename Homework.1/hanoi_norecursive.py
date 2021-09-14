@@ -1,3 +1,6 @@
+# Author: GNAQ (HIT-120L022004)
+# Date: 2021/09/14 17:22
+
 from typing import List, Tuple
 
 def Print_Move(src: str, dest: str, plateId: int):
