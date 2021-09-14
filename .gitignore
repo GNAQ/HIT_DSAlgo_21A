@@ -11,3 +11,8 @@ refs
 *.out
 *.in
 *.err
+*.html
+*.doc
+*.docx
+*.xsl
+*.xslx
