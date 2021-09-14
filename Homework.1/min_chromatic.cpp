@@ -13,16 +13,27 @@ using std::cin;
 using std::cout;
 using std::cerr;
 
-
-int Greedy(int n, 
-	std::vector< std::vector<int> > edges, 
-	std::vector<int> color)
+int Greedy(const int n, const int colorId, 
+	const std::vector< std::vector<int> > &edges, 
+	std::vector<int> &color)
 {
 	std::set<int> vset;
-	for (int i = 1; i <= n; i++)
+	for (int i = 1; i <= n; i++)  
 	{
-		
+		if (color[i] == 0)
+		{
+			bool ok = true;
+			for (auto v: vset)
+				if (edges[i][v])
+					ok = false;
+			if (ok)
+				vset.insert(i);
+		}
 	}
+	for (auto u: vset) 
+		color[u] = colorId;
+		
+	return vset.size();
 }
 
 // Input format:
@@ -32,24 +43,22 @@ int Greedy(int n,
 
 int main()
 {
-	int n, m;
-	cin >> n >> m;
-	
-	std::vector< std::vector<int> > edges(n);
+	int n, m, u, v;
+	// 也可以用邻接表存边，此处根据伪代码，发现邻接矩阵比较方便
+	std::vector< std::vector<int> > edges(n, std::vector<int>(n)); 
 	std::vector<int> color(n, 0);
-	int chromatic = 0;
 	
-	int u, v;
+	cin >> n >> m;
 	for (int i = 1; i <= m; i++)
 	{
 		cin >> u >> v;
-		edges[u].push_back(v);
+		edges[u][v] = edges[v][u] = 0;
 	}
 	
 	int n2 = n, ans = 0;
 	while (n2 > 0)
 	{
-		n2 -= Greedy(n, edges, color);
+		n2 -= Greedy(n, ans + 1, edges, color);
 		ans++;
 	}
 	
