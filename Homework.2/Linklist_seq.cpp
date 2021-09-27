@@ -291,11 +291,13 @@ public:
 		if (ptr == begin)
 		{
 			begin = begin->r;
+			begin->l = nullptr;
 			delete ptr;
 		}
 		else if (ptr == lst)
 		{
 			lst = lst->l;
+			lst->r = nullptr;
 			delete ptr;
 		}
 		else
@@ -379,16 +381,92 @@ public:
 	// 2. 对于已排好序的线性表，删除所有重复元素的算法。
 	void unique()
 	{
-		for (unsigned i = 0; i <= lst; i++)
-			while (i < lst && elm[i] == elm[i + 1])
-				this->remove(i + 1);
+		Elements *ptr = begin;
+		if (ptr == nullptr)
+			throw("Error: Empty list");
+		for (unsigned i = 0; ptr != lst; i++)
+		{
+			while (ptr->r != nullptr && ptr->val == ptr->r->val)
+				remove(i + 1);
+			ptr = ptr->r;
+		}
 	}
 	
 	// 3. 线性表“逆置”算法
 	void reverse()
 	{
-		for (unsigned i = 0; i <= lst / 2; i++)
-			swap(elm[i], elm[lst - i]);
+		Elements *ptr = begin;
+		if (ptr == nullptr)
+			throw("Error: Empty list");
+		for (unsigned i = 0; ptr != lst; i++)
+		{
+			swap(ptr->l, ptr->r);
+			ptr = ptr->l;
+		}
+	}
+	
+	// 4. 线性表循环左移/右移k位的算法。
+	// dir =  1 -> 右移
+	// dir = -1 -> 左移
+	void turnK(unsigned k, int dir)
+	{
+		if (begin == nullptr) 
+			throw("Error: Empty list");
+		Elements *b, *e;
+		for (unsigned i = 1; i <= k; i++)
+		{
+			b = begin;
+			e = lst;
+			if (dir == 1)
+			{
+				begin = e;
+				begin->r = b;
+				begin->l = nullptr;
+				b->l = begin;
+				lst = e->l;
+				lst->r = nullptr;
+			}
+			else
+			{
+				lst = b;
+				lst->l = e;
+				lst->r = nullptr;
+				begin = b->r;
+				begin->l = nullptr;
+			}
+		}
+	}
+	
+	// 5. 合并两个已排好序的线性表的算法。
+	// sorted by "<" (may overrided)
+	friend LinkList<ElemTyp> list_merge
+		(const LinkList<ElemTyp> *a, const LinkList<ElemTyp> *b)
+	{
+		LinkList<ElemTyp> rslt(a->max_size + b->max_size, ElemTyp());
+		while (a->lst >= 0 && b->lst >= 0)
+		{
+			if ((*a)[0] < (*b)[0])
+			{
+				rslt.insert((*a)[0]);
+				a->remove(0);
+			}
+			else
+			{
+				rslt.insert((*b)[0]);
+				b->remove(0);
+			}
+		}
+		while (a->lst >= 0)
+		{
+			rslt.insert((*a)[0]);
+			a->remove(0);
+		}
+		while (b->lst >= 0)
+		{
+			rslt.insert((*b)[0]);
+			b->remove(0);
+		}
+		return rslt;
 	}
 };
 
