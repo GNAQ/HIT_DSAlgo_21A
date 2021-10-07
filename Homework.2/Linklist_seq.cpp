@@ -1,10 +1,10 @@
 // At Peace.
 // Author: GNAQ (120L022004)
-// Date: 2021/08/18
+// Date: 2021/09/18
 // Compile Flags: --std=c++11 -O2
 
 #include <bits/stdc++.h>
-using std::cin; using std::cout; using std::cerr;
+using std::cin; using std::cout; using std::cerr; using std::endl;
 
 // Interface Base
 template<typename ElemTypBase>
@@ -23,6 +23,7 @@ public:
 	virtual void clear() = 0;
 	virtual ElemTypBase front() = 0;
 	virtual ElemTypBase end() = 0;
+	virtual unsigned size() = 0;
 };
 
 template<typename ElemTyp>
@@ -50,6 +51,7 @@ public:
 		lst = -1;
 		elm = new int[size];
 		std::fill_n(elm, size, initVal);
+		max_size = size;
 	}
 	
 	~SeqList()
@@ -63,6 +65,11 @@ public:
 		if (p > lst) 
 			throw std::out_of_range("index out of range");
 		return elm[p];
+	}
+	
+	unsigned size()
+	{
+		return lst + 1;
 	}
 	
 	void remove(unsigned p)
@@ -79,10 +86,10 @@ public:
 	{
 		if (lst == max_size - 1 || max_size < 1)
 			throw("Memory overflow");
-		if (p > lst)
+		if (p > lst + 1)
 			throw std::out_of_range("index out of range");
-		for (unsigned i = lst; i >= p; i--)
-			elm[i + 1] = elm[i];
+		for (unsigned i = lst + 1; i > p; i--)
+			elm[i] = elm[i - 1];
 		lst++;
 		elm[p] = val;
 		return;
@@ -144,7 +151,7 @@ public:
 	void reverse()
 	{
 		for (unsigned i = 0; i <= lst / 2; i++)
-			swap(elm[i], elm[lst - i]);
+			std::swap(elm[i], elm[lst - i]);
 	}
 	
 	// 4. 线性表循环左移/右移k位的算法。
@@ -225,17 +232,19 @@ private:
 		{
 		}
 	} *begin, *lst;
+	unsigned inner_size;
 
 public:
 	
 	LinkList(){}
-	LinkList(unsigned size, ElemTyp val)
+	LinkList(unsigned _size, ElemTyp val)
 	{
 		Elements *ptr;
 		begin = ptr = new Elements(val);
-		while (size > 1)
+		inner_size = _size;
+		while (_size > 1)
 		{
-			size--;
+			_size--;
 			Elements *tmp = new Elements(val);
 			ptr->r = tmp;
 			tmp->l = ptr;
@@ -258,6 +267,11 @@ public:
 		return ptr->val;
 	}
 	
+	unsigned size()
+	{
+		return inner_size;
+	}
+	
 	void insert(unsigned p, ElemTyp val)
 	{
 		Elements *ptr = begin, *tmp;
@@ -266,7 +280,20 @@ public:
 		for (unsigned i = 1; i <= p; i++)
 		{
 			if (ptr->r == nullptr)
-				throw std::out_of_range("index out of range");
+			{
+				if (i != p)
+					throw std::out_of_range("index out of range");
+				else
+				{
+					ptr->r = new Elements();
+					ptr->r->l = ptr;
+					ptr = ptr->r;
+					ptr->val = val;
+					inner_size++;
+					lst = ptr;
+					return;
+				}
+			}
 			ptr = ptr->r;
 		}
 		tmp = new Elements();
@@ -275,6 +302,7 @@ public:
 		tmp->l = ptr->l;
 		tmp->l->r = tmp;
 		ptr->l = tmp;
+		inner_size++;
 	}
 	
 	void remove(unsigned p)
@@ -306,6 +334,7 @@ public:
 			ptr->r->l = ptr->l;
 			delete ptr;
 		}
+		inner_size--;
 	}
 	
 	unsigned find(ElemTyp val)
@@ -348,6 +377,7 @@ public:
 		} while (ptr != lst);
 		delete lst;
 		begin = lst = nullptr;
+		inner_size = 0;
 	}
 	
 	ElemTyp previous(unsigned p)
@@ -417,21 +447,23 @@ public:
 		{
 			b = begin;
 			e = lst;
+			
 			if (dir == 1)
 			{
 				begin = e;
 				begin->r = b;
-				begin->l = nullptr;
 				b->l = begin;
 				lst = e->l;
+				begin->l = nullptr;
 				lst->r = nullptr;
 			}
 			else
 			{
 				lst = b;
 				lst->l = e;
-				lst->r = nullptr;
+				e->r = lst;
 				begin = b->r;
+				lst->r = nullptr;
 				begin->l = nullptr;
 			}
 		}
@@ -472,8 +504,55 @@ public:
 
 int main()
 {
-	SeqList<int> slist(10, 7);
-	LinkList<std::string> qwq(20, "22");
+	std::ifstream infile;
+	infile.open("testdata.in");
 	
+	if (!infile.is_open())
+	{
+		cout << "Error: couldn't read test data file";
+		return 0;
+	}
 	
+	int iVal1, siz1, siz2; 
+	std::string iVal2;
+	
+	infile >> siz1 >> iVal1;
+	SeqList<int> slist(siz1, iVal1);
+	
+	for (int i = 0; i < siz1; i++)
+	{
+		int val, pos;
+		infile >> pos >> val;
+		slist.insert(pos, val);
+	}
+	
+	cout << "Initial Status: " << endl;
+	for (int i = 0; i < slist.size(); i++)
+		cout << slist[i] << " \n"[i == slist.size() - 1];
+	
+	slist.reverse();
+	
+	cout << "Reversed:" << endl;
+	for (int i = 0; i < slist.size(); i++)
+		cout << slist[i] << " \n"[i == slist.size() - 1];
+	
+	infile >> siz2 >> iVal2;
+	LinkList<std::string> llist(siz2, iVal2);
+	
+	for (int i = 0; i < siz2; i++)
+	{
+		int pos; std::string val;
+		infile >> pos >> val;
+		llist.insert(pos, val);
+	}
+	
+	cout << "Initial Status: " << endl;
+	for (int i = 0; i < llist.size(); i++)
+		cout << llist[i] << " \n"[i == llist.size() - 1];
+	
+	llist.turnK(2, 1);
+	
+	cout << "Turned 3 times left:" << endl;
+	for (int i = 0; i < llist.size(); i++)
+		cout << llist[i] << " \n"[i == llist.size() - 1];
 }
