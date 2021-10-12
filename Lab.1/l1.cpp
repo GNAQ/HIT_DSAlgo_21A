@@ -176,6 +176,7 @@ public:
 	
 	bool DFS(int x, int y)
 	{
+		vis[x][y] = 1;
 		if (x == h && y == w)
 		{
 			path_list.push_back({x, y});
@@ -188,27 +189,73 @@ public:
 				(!vis[x + DIR[d][0]][y + DIR[d][1]]) && 
 				get(x, y, d))
 			{
-				vis[x][y] = 1;
 				if (DFS(x + DIR[d][0], y + DIR[d][1]))
 				{
 					path_list.push_back({x, y});
-					path[x][y]=d + 1;
+					path[x][y] = d + 1;
 					return true;
 				}
-				vis[x][y] = 0;
 			}
 		}
+		vis[x][y] = 0;
 		return false;
 	}
 	
 	void SearchWithStack()
 	{
-		std::vector<std::pair<int, int>> stk;
+		struct _NR
+		{
+			int x, y, d;
+			_NR() {}
+			_NR(int inX, int inY, int inD)
+				: x(inX), y(inY), d(inD)
+			{}
+		};
+		std::vector<_NR> stk;
+		int head = 1;
+		stk.push_back(_NR(0, 0, 0));
+		stk.push_back(_NR(1, 1, 0));
+		vis[1][1] = 1;
 		
+		while (head >= 1)
+		{
+			_NR &tmp = stk[head];
+			
+			if (tmp.x == h && tmp.y == w)
+			{
+				for (int i = 1; i < head; i++)
+				{
+					path_list.push_back({stk[i].x, stk[i].y});
+					path[stk[i].x][stk[i].y] = stk[i].d + 1;
+				}
+				path_list.push_back({h, w});
+				break;
+			}
+			
+			for (;tmp.d < 8; tmp.d++)
+				if (in(tmp.x + DIR[tmp.d][0], tmp.y + DIR[tmp.d][1]) && 
+					(!vis[tmp.x + DIR[tmp.d][0]][tmp.y + DIR[tmp.d][1]]) && 
+					get(tmp.x, tmp.y, tmp.d))
+				{
+					vis[tmp.x + DIR[tmp.d][0]][tmp.y + DIR[tmp.d][1]] = 1;
+					head++;
+					stk.push_back(_NR(tmp.x + DIR[tmp.d][0], tmp.y + DIR[tmp.d][1], 0));
+					break;
+				}
+			
+			if (stk[head].d >= 8)
+			{
+				vis[stk[head].x][stk[head].y] = 0;
+				head--;
+				stk.pop_back();
+				stk[head].d++;
+			}
+		}
 	}
 	
 	void BFS()
 	{
+		
 		
 	}
 };
@@ -228,7 +275,7 @@ int main()
 	
 	Maze mz(5, 5);
 	mz.random_generate(cin);
-	mz.DFS(1, 1);
+	mz.BFS();
 	mz.output(cout, 1);
 	cerr << "output ok.";
 }
