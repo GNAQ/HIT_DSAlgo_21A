@@ -108,8 +108,7 @@ public:
 		// build tree 
 		for (int i = tot - 1; i >= 1; i--)
 		{
-			HTNode_D *lt = pvec[i], 
-				*rt = pvec[i - 1];
+			HTNode_D *lt = pvec[i], *rt = pvec[i - 1];
 			
 			HTNode_D *nroot = new HTNode_D(
 					DataTyp(), ++_siz, lt->val + rt->val, lt, rt);
@@ -214,10 +213,14 @@ void Read(std::string file,
 
 int main()
 {
+	std::string inp_file;
+	cout << "Specify Input File:";
+	cin >> inp_file;
+	
 	// Read-in article
 	std::vector<std::pair<char, int>> srcdata;
 	std::string srcstr;
-	Read("art2.in", srcstr, srcdata);
+	Read(inp_file, srcstr, srcdata);
 	
 	// Build Huffman Tree 
 	Huffman_Tree<char> ht;
@@ -228,6 +231,9 @@ int main()
 	// Encode source article
 	std::string encstr;
 	Encode(srcstr, tb, encstr);
+	
+	cout << "--- Encoded into : ---" 
+		 << endl << encstr << endl;
 	
 	// Write Into Bitstream
 	std::ofstream ofile;
