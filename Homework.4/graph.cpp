@@ -157,6 +157,8 @@ public:
 	int GetNext(int u, int v)
 	{
 		Check(u);
+		if (v == 0) 
+			return hd[u];
 		v = edge[v].pre;
 		return v;
 	}
@@ -208,16 +210,16 @@ void Conv(Graph &src, Graph &dest)
 	}
 }
 
-void Output(Graph &now)
+void Output(Graph &now, std::ostream &os)
 {
-	cout << "Graph with " << now.vsize() << " vertices: \n";
+	os << "Graph with " << now.vsize() << " vertices: \n";
 	for (int i = 1; i <= now.vsize(); i++)
 	{
-		cout << "Vertex " << i << " : ";
+		os << "Vertex " << i << " : ";
 		std::vector<int> tv = now.GetEdges(i);
 		for (auto v: tv)
-			cout << v << " ";
-		cout << "\n";
+			os << v << " ";
+		os << "\n";
 	}
 }
 
@@ -251,7 +253,10 @@ void DFS_Recursive(
 	STree.clear();
 	for (int i = 1; i <= G.vsize(); i++)
 		if (dvis[i] == false)
-			DFS(1, G, STree, Sseq);
+		{
+			Sseq.push_back(i);
+			DFS(i, G, STree, Sseq);
+		}
 }
 
 void DFS_NonRecursive(
@@ -260,14 +265,28 @@ void DFS_NonRecursive(
 	dvis.clear();
 	dvis.shrink_to_fit();
 	dvis.resize(G.vsize() + 2, 0);
-	struct _Nd { int st, u; };
+	struct _Nd { int st, u; std::vector<int> vt; };
 	
 	for (int i = 1; i <= G.vsize(); i++)
 		if (dvis[i] == false)
 		{
-			std::vector<_Nd> stk(G.vsize() * 2 + 10, {0, 0});
+			std::vector<_Nd> stk(G.vsize() + 10, _Nd());
 			int head = 0;
-			
+			stk[++head] = {0, i, G.GetEdges(i)};
+			while (head > 0)
+			{
+				_Nd cur = stk[head];
+				dvis[cur.u] = true;
+				for (; cur.st < (int)cur.vt.size(); cur.st++)
+					if (dvis[cur.vt[cur.st]] == false)
+					{
+						stk[++head] = {0, cur.vt[cur.st], 
+							G.GetEdges(cur.vt[cur.st])};
+						STree.Ins(cur.u, cur.vt[cur.st]);
+						STree.Ins(cur.vt[cur.st], cur.u);
+						Sseq.push_back(cur.vt[cur.st]);
+					}
+			}
 		}
 }
 
@@ -297,6 +316,7 @@ void BFS(Graph &G, Graph &STree, std::vector<int> &Sseq)
 						que[++tail] = v;
 						dvis[v] = true;
 						STree.Ins(u, v);
+						STree.Ins(v, u);
 						Sseq.push_back(v);
 					}
 			}
@@ -305,7 +325,41 @@ void BFS(Graph &G, Graph &STree, std::vector<int> &Sseq)
 
 int main()
 {
+	int n, m;
+	std::ifstream ifile("data.in");
+	std::ofstream ofile("result.out");
 	
+	ifile >> n >> m;
 	
+	GraphMat A(n);
+	GraphList B(n);
+	
+	int u, v;
+	for (int i = 1; i <= m; i++)
+	{
+		ifile >> u >> v;
+		A.Ins(u, v);
+	}
+	
+	Conv(A, B);
+	Output(B, ofile);
+	
+	GraphMat gentree(n);
+	std::vector<int> srchseq;
+	BFS(B, gentree, srchseq);
+	
+	for (auto v: srchseq)
+		ofile << v << " ";
+	ofile << '\n';
+	Output(gentree, ofile);
+	
+	srchseq.clear();
+	gentree.clear();
+	DFS_Recursive(A, gentree, srchseq);
+	
+	for (auto v: srchseq)
+		ofile << v << " ";
+	ofile << '\n';
+	Output(gentree, ofile);
 	
 }
