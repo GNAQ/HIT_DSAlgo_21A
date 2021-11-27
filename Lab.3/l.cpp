@@ -21,10 +21,10 @@ struct Graph
 	Graph(int _n, int _m)
 		: nsiz(_n), msiz(_m)
 	{
-		edge = new Ed[_n * 2 + 10];
+		edge = new Ed[_m * 2 + 10];
 		hd = new int[_n + 10];
 		memset(hd, 0, sizeof(int) * (_n + 10));
-		memset(edge, 0, sizeof(Ed) * (_n * 2 + 10));
+		memset(edge, 0, sizeof(Ed) * (_m * 2 + 10));
 		hcnt = 0;
 	}
 	
@@ -46,6 +46,11 @@ struct Graph
 	void Ins(int u, int v, int w)
 	{
 		Is(u, v, w); 
+		Is(v, u, w);
+	}
+	
+	void IsRev(int u, int v, int w)
+	{
 		Is(v, u, w);
 	}
 };
@@ -75,7 +80,7 @@ struct Heap
 		int u = hsiz;
 		while (u > 1)
 		{
-			if (hp[u / 2] < hp[u]) 
+			if (hp[u / 2] < hp[u])
 				break;
 			std::swap(hp[u / 2], hp[u]);
 			u /= 2;
@@ -89,7 +94,7 @@ struct Heap
 		while (v <= hsiz)
 		{
 			if (v < hsiz && hp[v + 1] < hp[v]) v++;
-			if (hp[v] > hp[u]) break;
+			if (hp[u] < hp[v]) break;
 			std::swap(hp[u], hp[v]);
 			u = v; v = u * 2;
 		}
@@ -121,6 +126,7 @@ void Dijkstra(const Graph &G, int s, int *dis, int *pre_v)
 		if (vis[tmp.id]) 
 			continue;
 		vis[tmp.id] = 1;
+		
 		for (int v = G.hd[tmp.id]; v; v = G.edge[v].pre)
 		{
 			int vt = G.edge[v].to;
@@ -138,20 +144,31 @@ void Dijkstra(const Graph &G, int s, int *dis, int *pre_v)
 void Floyd(const Graph &G, int **dis, int **pre_v)
 {
 	int ncnt = G.nsiz;
-	memset(dis, 0x3f, sizeof(int) * (ncnt + 2) * (ncnt + 2));
-
+	for (int i = 0; i < ncnt + 10; i++)
+		for (int j = 0; j < ncnt + 10; j++)
+		{
+			dis[i][j] = 0x3f3f3f3f;
+			if (i == j) dis[i][j] = 0;
+			pre_v[i][j] = 0;
+		}
+	
 	for (int i = 1; i <= ncnt; i++)
 		for (int v = G.hd[i]; v; v = G.edge[v].pre)
+		{
 			dis[i][G.edge[v].to] = G.edge[v].w;
+			// if (G.edge[v].w) dis[i][G.edge[v].to] = 1;
+			pre_v[i][G.edge[v].to] = -1;
+		}
 	
 	for (int k = 1; k <= ncnt; k++)
 		for (int i = 1; i <= ncnt; i++)
 			for (int j = 1; j <= ncnt; j++)
-				if (dis[i][j] < dis[i][k] + dis[k][j])
+				if (dis[i][j] > dis[i][k] + dis[k][j])
 				{
 					dis[i][j] = dis[i][k] + dis[k][j];
 					pre_v[i][j] = k;
 				}
+				// dis[i][j] = dis[i][j] | (dis[i][j] & dis[k][k]);
 }
 
 void Dij_Output(int u, int *pre_v, std::vector<int> &ve)
@@ -163,8 +180,10 @@ void Dij_Output(int u, int *pre_v, std::vector<int> &ve)
 
 std::vector<int> Floyd_Output(int u, int v, int **pre_v)
 {
-	if (u==v)
+	if (pre_v[u][v] == -1 || u == v)
 		return std::vector<int> {u};
+	// if (u == v)
+	// 	return std::vector<int> {u};
 	std::vector<int> r1, r2;
 	r1 = Floyd_Output(u, pre_v[u][v], pre_v);
 	r2 = Floyd_Output(pre_v[u][v], v, pre_v);
@@ -172,23 +191,92 @@ std::vector<int> Floyd_Output(int u, int v, int **pre_v)
 	return r1;
 }
 
-int main()
+void ShortestPath_UV(Graph &G, int u, int v)
 {
-	Graph G;
-	int *dis = new int[100];
-	int *pre_v = new int[100];
+	cout << "Shortest Path from " << u << " to " << v << endl;
 	
+	int *dis = new int[G.nsiz + 10];
+	int *pre_v = new int[G.nsiz + 10];
+	
+	Dijkstra(G, u, dis, pre_v);
+	cout << "Shortest Path Length: " << dis[v] << '\n';
+	std::vector<int> pathvec;
+	Dij_Output(v, pre_v, pathvec);
+	for (int i = pathvec.size() - 1; i >= 0; i--)
+		cout << pathvec[i] << ' ';
+	cout << endl;
+	
+	delete[] dis;
+	delete[] pre_v;
+	
+	int **dis2 = new int*[G.nsiz + 10];
+	for (int i = 0; i < G.nsiz + 10; i++)
+		dis2[i] = new int[G.nsiz + 10];
+	int **pre_v2 = new int*[G.nsiz + 10];
+	for (int i = 0; i < G.nsiz + 10; i++)
+		pre_v2[i] = new int[G.nsiz + 10];
+	
+	Floyd(G, dis2, pre_v2);
+	cout << "Shortest Path Length: " << dis2[u][v] << '\n';
+	pathvec.clear();
+	pathvec = Floyd_Output(u, v, pre_v2);
+	pathvec.push_back(v);
+	for (auto i: pathvec) 
+		cout << i << ' ';
+	cout << endl;
+}
+
+int main()
+{	
 	int n, m;
 	int u, v, w;
-	std::ifstream ifile("data.in");
+	cout << "Input from: ";
+	std::string datapath;
+	cin >> datapath;
+	std::ifstream ifile(datapath);
 	
 	ifile >> n >> m;
-	G.msiz = m; G.nsiz = n;
+	Graph G(n, m);
 	for (int i = 1; i <= m; i++)
 	{
 		ifile >> u >> v >> w;
 		G.Ins(u, v, w);
+		// G.IsRev(u, v, w);
 	}
-	Dijkstra(G, 1, dis, pre_v);
+	
+	int *dis = new int[n + 10];
+	int *pre_v = new int[n + 10];
+	int src;
+	ifile >> src;
+	Dijkstra(G, src, dis, pre_v);
+	
+	std::vector<int> pathvec;
+	cout << "Shortest Path List: " << endl;
+	for (int i = 1; i <= n; i++)
+	{
+		cout << "Node " << i << ": " << dis[i] << endl;
+		pathvec.clear();
+		Dij_Output(i, pre_v, pathvec);
+		for (int j = pathvec.size() - 1; j >= 0; j--)
+			cout << pathvec[j] << ' ';
+		cout << endl;
+	}
+	
+	int **dis2 = new int*[n + 10];
+	for (int i = 0; i < n + 10; i++)
+		dis2[i] = new int[n + 10];
+	int **pre_v2 = new int*[n + 10];
+	for (int i = 0; i < n + 10; i++)
+		pre_v2[i] = new int[n + 10];
+	
+	Floyd(G, dis2, pre_v2);
+	
+	cout << "Shortest Path Matrix: " << endl;
+	for (int i = 1; i <= n; i++)
+		for (int j = 1; j <= n; j++)
+			cout << ((dis2[i][j] >= dis2[n + 1][0]) ? -1 : dis2[i][j]) << " \n"[j == n];
+	
+	ifile >> u >> v;
+	ShortestPath_UV(G, u, v);
 	
 }
